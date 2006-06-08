@@ -1,0 +1,14 @@
+<projectDescription>
+  <name>com.idega.maven.webapp</name>
+  <comment>Maven plugin parent</comment>
+  <projects/>
+  <buildSpec>
+    <buildCommand>
+      <name>org.eclipse.jdt.core.javabuilder</name>
+      <arguments/>
+    </buildCommand>
+  </buildSpec>
+  <natures>
+    <nature>org.eclipse.jdt.core.javanature</nature>
+  </natures>
+</projectDescription>
