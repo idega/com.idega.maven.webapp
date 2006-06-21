@@ -10,7 +10,7 @@
   <artifactId>com.idega.maven.webapp</artifactId>
   <packaging>maven-plugin</packaging>
   <name>idegaWeb Maven War Plugin</name>
-  <version>1.0b2</version>
+  <version>1.0b3</version>
 
   <dependencies>
     <dependency>
