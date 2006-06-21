@@ -1,20 +1,18 @@
 package com.idega.maven.webapp;
 
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
-
 import com.idega.util.FileUtil;
 import com.idega.util.WebXmlMerger;
 
@@ -22,7 +20,7 @@ import com.idega.util.WebXmlMerger;
  * Build the necessary things up in an idegaweb webapp
  *
  * @author <a href="evenisse@apache.org">Emmanuel Venisse</a>
- * @version $Id: IdegaWebWarMojo.java,v 1.2 2006/06/08 22:49:20 tryggvil Exp $
+ * @version $Id: IdegaWebWarMojo.java,v 1.3 2006/06/21 23:17:49 tryggvil Exp $
  * @goal war
  * @phase package
  * @requiresDependencyResolution runtime
@@ -85,10 +83,11 @@ public class IdegaWebWarMojo extends WarMojo {
 				
 				buf.append("\n</web-app>\n");
 				
-		        DataOutputStream output = new DataOutputStream(new FileOutputStream(webXml));
-		        output.writeUTF(buf.toString());
-		        output.flush();
-		        output.close();
+				
+				PrintWriter writer = new PrintWriter(webXml,"ISO-8859-1");
+				writer.write(buf.toString());
+				writer.close();
+				
 				
 			} catch (IOException e) {
 				// TODO Auto-generated catch block
