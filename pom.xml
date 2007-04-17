@@ -34,6 +34,12 @@
 	</repository>
 </repositories>
 
+  <scm>
+    <connection>scm:cvs:ext:idegaweb@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</connection>
+    <developerConnection>scm:cvs:ext:idegaweb@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</developerConnection>
+  </scm>
+
+
 <distributionManagement>
 	<repository>
 	<id>idega1</id>
