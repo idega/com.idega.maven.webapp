@@ -11,7 +11,10 @@
   <packaging>maven-plugin</packaging>
   <name>idegaWeb Maven War Plugin</name>
   <version>4.0-SNAPSHOT</version>
-
+  <scm>
+    <connection>scm:cvs:ext:${user.name}@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</connection>
+    <developerConnection>scm:cvs:ext:${user.name}@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</developerConnection>
+  </scm>
   <repositories>
 	<repository>
       <id>idega1</id>
