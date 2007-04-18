@@ -36,6 +36,11 @@
   </repositories>
 
   <distributionManagement>
+    <snapshotRepository>
+      <id>idega1snapshots</id>
+      <name>idega Maven2 Snapshot Repository</name>
+      <url>scp://repository.idega.com/var/www/webs/repository.idega.com/maven2</url>
+    </snapshotRepository>
     <repository>
       <id>idega1</id>
       <name>idega Maven2 Repository</name>
