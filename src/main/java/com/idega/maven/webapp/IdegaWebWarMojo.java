@@ -22,7 +22,7 @@ import com.idega.util.WebXmlMerger;
  * Build the necessary things up in an idegaweb webapp
  *
  * @author <a href="evenisse@apache.org">Emmanuel Venisse</a>
- * @version $Id: IdegaWebWarMojo.java,v 1.5 2007/03/28 10:11:21 civilis Exp $
+ * @version $Id: IdegaWebWarMojo.java,v 1.6 2007/04/22 15:19:35 tryggvil Exp $
  * @goal war
  * @phase package
  * @requiresDependencyResolution runtime
@@ -85,7 +85,10 @@ public class IdegaWebWarMojo extends WarMojo {
 				//buf.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE web-app\n\tPUBLIC \"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN\"\n\t\"http://java.sun.com/dtd/web-app_2_3.dtd\">\n");
 				buf.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<web-app xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\" version=\"2.4\">\n");
 				//buf.append("\n<web-app>\n");
-				
+
+				buf.append("\n<!-- MODULE:BEGIN com.idega.springframework 0.0 -->\n");
+				buf.append("\n<!-- MODULE:END com.idega.springframework 0.0 -->\n");
+
 				buf.append("\n<!-- MODULE:BEGIN org.apache.myfaces 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END org.apache.myfaces 0.0 -->\n");
 				
