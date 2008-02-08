@@ -10,7 +10,7 @@
   <artifactId>com.idega.maven.webapp</artifactId>
   <packaging>maven-plugin</packaging>
   <name>idegaWeb Maven War Plugin</name>
-  <version>4.0.1</version>
+  <version>4.0.1-SNAPSHOT</version>
   <scm>
     <!--
     <connection>scm:cvs:ext:${username}@code.idega.com:/idega/cvs:${groupId}/${artifactId}/</connection>
