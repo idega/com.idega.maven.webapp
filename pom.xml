@@ -38,7 +38,7 @@
 	  <repository>
       <id>java.net</id>
       <name>Sun Java Net Maven Repository</name>
-      <url>https://maven-repository.dev.java.net/nonav/repository/</url>
+      <url>http://download.java.net/maven/2/</url>
       <!--snapshotPolicy>daily</snapshotPolicy-->
 	  <layout>legacy</layout>
     </repository>
