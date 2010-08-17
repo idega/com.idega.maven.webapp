@@ -10,6 +10,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -29,34 +30,29 @@ import com.idega.util.WebXmlMerger;
  */
 public class IdegaWebWarMojo extends WarMojo {
 
-
 	private static final String WEB_INF = "WEB-INF";
 	private boolean extractBundles=false;
 
-	public IdegaWebWarMojo() {
-		// TODO Auto-generated constructor stub
-	}
-	
-    public void execute() throws MojoExecutionException{
-    	
-    		createWebXml();
-    		
-    		createFacesConfig();
-    	
-			super.execute();
-		
-			exctactResourcesFromJars();
-    		
-    		compileDependencyList();
-    		
-    		mergeCustomizedFacesConfigs();
-    		
-    		mergeWebInf();
-    		
-    		cleanup();
-    		
+	public IdegaWebWarMojo() {}
+
+	public void execute() throws MojoExecutionException{
+    	createWebXml();
+
+    	createFacesConfig();
+
+    	super.execute();
+
+		exctactResourcesFromJars();
+
+		compileDependencyList();
+
+    	mergeCustomizedFacesConfigs();
+
+    	mergeWebInf();
+
+    	cleanup();
     }
-	
+
 	private void cleanup() {
 		if(!isExtractBundles()){
 			//delete the idegaweb bundle dirs:
@@ -65,83 +61,68 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 	}
 
-
 	private void createWebXml() {
 		File webXml = getWebXmlFile();
 		createWebXml(webXml);
 	}
-	
+
 	private void createFacesConfig() {
 		File facesCfg = getFacesConfigFile();
 		createFacesConfig(facesCfg);
 	}
-	
+
 	private void createWebXml(File webXml) {
 		if(!webXml.exists()){
 			try {
 				webXml.createNewFile();
-				
+
 				StringBuffer buf = new StringBuffer();
-				//buf.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE web-app\n\tPUBLIC \"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN\"\n\t\"http://java.sun.com/dtd/web-app_2_3.dtd\">\n");
-				buf.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<web-app xmlns=\"http://java.sun.com/xml/ns/j2ee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd\" version=\"2.4\">\n");
-				//buf.append("\n<web-app>\n");
+				buf.append("<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:web=\"http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\" id=\"Idega_ePlatform\" version=\"2.5\">\n");
+				buf.append("<display-name>Idega Web application: ePlatform</display-name>\n");
 
 				buf.append("\n<!-- MODULE:BEGIN com.idega.springframework 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END com.idega.springframework 0.0 -->\n");
 
 				buf.append("\n<!-- MODULE:BEGIN org.apache.myfaces 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END org.apache.myfaces 0.0 -->\n");
-				
+
 				buf.append("\n<!-- MODULE:BEGIN com.idega.core 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END com.idega.core 0.0 -->\n");
-				
+
 				buf.append("\n<!-- MODULE:BEGIN com.idega.faces 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END com.idega.faces 0.0 -->\n");
-				
+
 				buf.append("\n<!-- MODULE:BEGIN org.apache.axis 0.0 -->\n");
 				buf.append("\n<!-- MODULE:END org.apache.axis 0.0 -->\n");
-				
+
 				buf.append("\n</web-app>\n");
-				
-				
-				PrintWriter writer = new PrintWriter(webXml,"ISO-8859-1");
+
+
+				PrintWriter writer = new PrintWriter(webXml, "UTF-8");
 				writer.write(buf.toString());
 				writer.close();
-				
-				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
 	}
-	
+
 	private void createFacesConfig(File facesCfg) {
 		if(!facesCfg.exists()){
 			try {
 				facesCfg.createNewFile();
-				
-				
-				//buf.append("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>\n<!DOCTYPE web-app\n\tPUBLIC \"-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN\"\n\t\"http://java.sun.com/dtd/web-app_2_3.dtd\">\n");
-				String xmlHeader = 
-					"<?xml version=\"1.0\"?>\n"+
-					"<!DOCTYPE faces-config \n"+
-					"\tPUBLIC \"-//Sun Microsystems, Inc.//DTD JavaServer Faces Config 1.0//EN\"\n"+
-					"\t\"http://java.sun.com/dtd/web-facesconfig_1_0.dtd\">\n";
-					//+"<!-- Generated file by idegaWeb please don't modify the module markers -->";
-				
+
+				String xmlHeader = "<?xml version='1.0' encoding='UTF-8'?>\n\n";
+
 				StringBuffer buf = new StringBuffer(xmlHeader);
-				buf.append("<faces-config><!-- empty -->");
-				buf.append("\n</faces-config>\n");
-				
-				
-				PrintWriter writer = new PrintWriter(facesCfg, "ISO-8859-1");
+				buf.append("<faces-config xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-facesconfig_1_2.xsd\" version=\"1.2\">")
+				.append("<!-- empty -->")
+				.append("\n</faces-config>\n");
+
+				PrintWriter writer = new PrintWriter(facesCfg, "UTF-8");
 				writer.write(buf.toString());
 				writer.close();
-				
-				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -160,7 +141,7 @@ public class IdegaWebWarMojo extends WarMojo {
 					String name = entry.getName();
 					//if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
 					if(extractResourceFromJar(name)){
-						
+
 						File file = null;
 						if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")){
 						//if(name.startsWith("WEB-INF")){
@@ -185,19 +166,17 @@ public class IdegaWebWarMojo extends WarMojo {
 							}
 							outStream.close();
 							inStream.close();
-							
+
 						}
 					}
 				}
-				
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
+
 		}
 	}
-	
+
 	protected boolean extractResourceFromJar(String name){
 		if(isExtractBundles()){
 			//if extractBundles is true then extract all these directories
@@ -212,18 +191,18 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return false;
 	}
-	
+
     private void compileDependencyList() {
-    	
+
         //File libDirectory = new File( webappDirectory, WEB_INF + "/lib" );
         //File tldDirectory = new File( webappDirectory, WEB_INF + "/tld" );
         //File webappClassesDirectory = new File( webappDirectory, WEB_INF + "/classes" );
 
     	MavenProject project = getProject();
         if(project!=null){
-        	
+
         Set artifacts = project.getArtifacts();
-        	
+
         for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();
@@ -264,7 +243,7 @@ public class IdegaWebWarMojo extends WarMojo {
    		merger.setOutputFile(getWebXmlFile());
 		merger.process();
 	}
-	
+
 	private void mergeCustomizedFacesConfigs() {
 		FacesConfigMerger merger = new FacesConfigMerger();
 		merger.setBundleFilePath("/WEB-INF/customized-faces-config.xml");
@@ -272,7 +251,7 @@ public class IdegaWebWarMojo extends WarMojo {
     	merger.setOutputFile(getFacesConfigFile());
 		merger.process();
 	}
-	
+
 	private File getWebInfDirectory() {
 		File webInf = new File( getWebappDirectory(), WEB_INF  );
 		if(!webInf.exists()){
@@ -280,7 +259,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return webInf;
 	}
-	
+
 
 	private File getWebXmlFile() {
 		File file = new File(getWebInfDirectory(),"web.xml");
@@ -294,12 +273,12 @@ public class IdegaWebWarMojo extends WarMojo {
 		}*/
 		return file;
 	}
-	
+
 	private File getFacesConfigFile() {
 		File file = new File(getWebInfDirectory(), "faces-config.xml");
 		return file;
 	}
-	
+
 	private File getLibDirectory() {
 		File libDirectory = new File(getWebInfDirectory(), "lib" );
 		return libDirectory;
@@ -311,7 +290,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return idegawebDir;
 	}
-	
+
 	private File getAndCreatePrivateBundlesDir(){
 		File bundlesDir = new File( getAndCreatePrivateIdegawebDir(), "bundles");
 		if(!bundlesDir.exists()){
@@ -319,7 +298,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return bundlesDir;
 	}
-	
+
 	private File getAndCreatePrivateBundleDir(File bundleJar){
 		String bundleFolderName = getBundleFolderName(bundleJar);
 		File bundlesDir = new File( getAndCreatePrivateBundlesDir(), bundleFolderName);
@@ -329,14 +308,14 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return bundlesDir;
 	}
-	
+
 	private String getBundleFolderName(File bundleJarFile){
 		String jarName = bundleJarFile.getName();
 		String bundleIdentifier = jarName.substring(0,jarName.indexOf("-"));
 		String bundleFolderName = bundleIdentifier+".bundle";
 		return bundleFolderName;
 	}
-	
+
 	private File getAndCreatePublicBundlesDir(){
 		File bundlesDir = new File( getAndCreatePublicIdegawebDir(), "bundles");
 		if(!bundlesDir.exists()){
@@ -344,7 +323,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return bundlesDir;
 	}
-	
+
 	private File getAndCreatePublicIdegawebDir(){
 		File idegawebDir = new File( getWebappDirectory(), "idegaweb");
 		if(!idegawebDir.exists()){
@@ -352,7 +331,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return idegawebDir;
 	}
-	
+
 	private File getAndCreatePublicBundleDir(File bundleJar){
 		String bundleFolderName = getBundleFolderName(bundleJar);
 		File bundlesDir = new File( getAndCreatePublicBundlesDir(), bundleFolderName);
@@ -371,9 +350,9 @@ public class IdegaWebWarMojo extends WarMojo {
 		this.extractBundles = extractBundles;
 	}
 
-	
+
 	public static void main(String[] args) throws Exception{
-		
+
 		IdegaWebWarMojo mojo = new IdegaWebWarMojo();
 		File webXML = new File("/tmp/web.xml");
 		//if(!webXML.exists()){
