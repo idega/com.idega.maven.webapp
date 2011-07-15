@@ -15,6 +15,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import com.idega.util.CustomConfigMerger;
 import com.idega.util.FacesConfigMerger;
 import com.idega.util.FileUtil;
 import com.idega.util.WebXmlMerger;
@@ -37,21 +38,46 @@ public class IdegaWebWarMojo extends WarMojo {
 
 	public void execute() throws MojoExecutionException{
     	createWebXml();
-
     	createFacesConfig();
+    	createCustomConfig();
 
     	super.execute();
 
 		exctactResourcesFromJars();
-
 		compileDependencyList();
 
-    	mergeCustomizedFacesConfigs();
-
+		mergeCustomizedFacesConfigs();
+		mergeCustomConfigs();
     	mergeWebInf();
 
     	cleanup();
     }
+
+	private File getCustomConfigFile() {
+		return new File(getWebInfDirectory(), "config.xml");
+	}
+
+	private void createCustomConfig() {
+		File config = getCustomConfigFile();
+		if (config.exists()) {
+			return;
+		}
+
+		try {
+			config.createNewFile();
+
+			StringBuffer buf = new StringBuffer();
+			buf.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
+			buf.append("\n<config>\n");
+			buf.append("\n</config>\n");
+
+			PrintWriter writer = new PrintWriter(config, "UTF-8");
+			writer.write(buf.toString());
+			writer.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	private void cleanup() {
 		if(!isExtractBundles()){
@@ -185,7 +211,7 @@ public class IdegaWebWarMojo extends WarMojo {
 			}
 		}
 		else{
-			if(name.equals("WEB-INF/")||name.equals("WEB-INF/web.xml") || name.equals("WEB-INF/customized-faces-config.xml")){
+			if(name.equals("WEB-INF/")||name.equals("WEB-INF/web.xml") || name.equals("WEB-INF/customized-faces-config.xml") || name.equals("WEB-INF/config.xml")){
 				return true;
 			}
 		}
@@ -249,6 +275,14 @@ public class IdegaWebWarMojo extends WarMojo {
 		merger.setBundleFilePath("/WEB-INF/customized-faces-config.xml");
     	merger.setBundlesFolder(getAndCreatePrivateBundlesDir());
     	merger.setOutputFile(getFacesConfigFile());
+		merger.process();
+	}
+
+	private void mergeCustomConfigs() {
+		CustomConfigMerger merger = new CustomConfigMerger();
+		merger.setBundleFilePath("/WEB-INF/config.xml");
+    	merger.setBundlesFolder(getAndCreatePrivateBundlesDir());
+    	merger.setOutputFile(getCustomConfigFile());
 		merger.process();
 	}
 
