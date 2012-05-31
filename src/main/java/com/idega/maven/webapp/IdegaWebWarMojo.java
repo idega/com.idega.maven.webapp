@@ -15,8 +15,10 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import com.idega.util.CoreConstants;
 import com.idega.util.FacesConfigMerger;
 import com.idega.util.FileUtil;
+import com.idega.util.StringHandler;
 import com.idega.util.WebXmlMerger;
 
 /**
@@ -139,41 +141,45 @@ public class IdegaWebWarMojo extends WarMojo {
 				while (entries.hasMoreElements()) {
 					JarEntry entry = (JarEntry) entries.nextElement();
 					String name = entry.getName();
-					//if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
-					if(extractResourceFromJar(name)){
-
+					if (extractResourceFromJar(name)) {
 						File file = null;
-						if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")){
-						//if(name.startsWith("WEB-INF")){
-							file = new File(getAndCreatePrivateBundleDir(fJarFile),name);
-						}
-						else if(name.startsWith("resources")){
+						if (name.startsWith("properties") || name.startsWith("jsp") || name.startsWith("WEB-INF")) {
+							file = new File(getAndCreatePrivateBundleDir(fJarFile), name);
+						} else if(name.startsWith("resources")) {
 							file = new File(getAndCreatePublicBundleDir(fJarFile),name);
 						}
-						if(entry.isDirectory()){
-							file.mkdirs();
-						}
-						else{
-							file.createNewFile();
-							InputStream inStream = jarFile.getInputStream(entry);
-							FileOutputStream outStream = new FileOutputStream(file);
-							int bufferlen = 1000;
-							byte[] buf = new byte[bufferlen];
-							int noRead = inStream.read(buf);
-							while(noRead!=-1){
-								outStream.write(buf);
-								noRead = inStream.read(buf);
-							}
-							outStream.close();
-							inStream.close();
 
-						}
+						createAndCopyContent(entry, file, jarFile);
+					}
+					
+					if (name.startsWith("WEB-INF/services/")) {
+						File services = new File(getWebInfDirectory(), StringHandler.replace(name, "WEB-INF/", CoreConstants.EMPTY));
+						createAndCopyContent(entry, services, jarFile);
 					}
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
+		}
+	}
+	
+	private void createAndCopyContent(JarEntry entry, File file, JarFile jarFile) throws IOException {
+		if (entry.isDirectory())
+			file.mkdirs();
+		else {
+			file.createNewFile();
+			InputStream inStream = jarFile.getInputStream(entry);
+			FileOutputStream outStream = new FileOutputStream(file);
+			int bufferlen = 1000;
+			byte[] buf = new byte[bufferlen];
+			int noRead = inStream.read(buf);
+			while (noRead != -1) {
+				outStream.write(buf);
+				noRead = inStream.read(buf);
+			}
+			outStream.close();
+			inStream.close();
 		}
 	}
 
@@ -193,11 +199,6 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
     private void compileDependencyList() {
-
-        //File libDirectory = new File( webappDirectory, WEB_INF + "/lib" );
-        //File tldDirectory = new File( webappDirectory, WEB_INF + "/tld" );
-        //File webappClassesDirectory = new File( webappDirectory, WEB_INF + "/classes" );
-
     	MavenProject project = getProject();
         if(project!=null){
 
@@ -253,8 +254,8 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
 	private File getWebInfDirectory() {
-		File webInf = new File( getWebappDirectory(), WEB_INF  );
-		if(!webInf.exists()){
+		File webInf = new File(getWebappDirectory(), WEB_INF);
+		if (!webInf.exists()) {
 			webInf.mkdirs();
 		}
 		return webInf;
@@ -262,15 +263,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 
 	private File getWebXmlFile() {
-		File file = new File(getWebInfDirectory(),"web.xml");
-		/*if(!file.exists()){
-			try {
-				file.createNewFile();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}*/
+		File file = new File(getWebInfDirectory(), "web.xml");
 		return file;
 	}
 
@@ -283,6 +276,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		File libDirectory = new File(getWebInfDirectory(), "lib" );
 		return libDirectory;
 	}
+
 	private File getAndCreatePrivateIdegawebDir(){
 		File idegawebDir = new File( getWebInfDirectory(), "idegaweb");
 		if(!idegawebDir.exists()){
@@ -301,7 +295,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 	private File getAndCreatePrivateBundleDir(File bundleJar){
 		String bundleFolderName = getBundleFolderName(bundleJar);
-		File bundlesDir = new File( getAndCreatePrivateBundlesDir(), bundleFolderName);
+		File bundlesDir = new File(getAndCreatePrivateBundlesDir(), bundleFolderName);
 		if(!bundlesDir.exists()){
 			bundlesDir.mkdir();
 			getLog().info("Extracting to bundle folder: "+bundlesDir.toURI());
@@ -352,12 +346,8 @@ public class IdegaWebWarMojo extends WarMojo {
 
 
 	public static void main(String[] args) throws Exception{
-
 		IdegaWebWarMojo mojo = new IdegaWebWarMojo();
 		File webXML = new File("/tmp/web.xml");
-		//if(!webXML.exists()){
-		//	webXML.createNewFile();
-		//}
 		mojo.createWebXml(webXML);
 	}
 }
