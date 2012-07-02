@@ -151,10 +151,10 @@ public class IdegaWebWarMojo extends WarMojo {
 
 						createAndCopyContent(entry, file, jarFile);
 					}
-					
-					if (name.startsWith("WEB-INF/services/")) {
-						File services = new File(getWebInfDirectory(), StringHandler.replace(name, "WEB-INF/", CoreConstants.EMPTY));
-						createAndCopyContent(entry, services, jarFile);
+
+					if (name.startsWith("WEB-INF/services/") || name.startsWith("WEB-INF/modules/")) {
+						File folderToCopyToWebApp = new File(getWebInfDirectory(), StringHandler.replace(name, "WEB-INF/", CoreConstants.EMPTY));
+						createAndCopyContent(entry, folderToCopyToWebApp, jarFile);
 					}
 				}
 			} catch (IOException e) {
@@ -163,7 +163,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 		}
 	}
-	
+
 	private void createAndCopyContent(JarEntry entry, File file, JarFile jarFile) throws IOException {
 		if (entry.isDirectory())
 			file.mkdirs();
