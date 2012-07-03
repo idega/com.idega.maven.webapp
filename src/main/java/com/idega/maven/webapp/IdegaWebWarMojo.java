@@ -152,7 +152,7 @@ public class IdegaWebWarMojo extends WarMojo {
 						createAndCopyContent(entry, file, jarFile);
 					}
 
-					if (name.startsWith("WEB-INF/services/") || name.startsWith("WEB-INF/modules/")) {
+					if (name.startsWith("WEB-INF/services/") || name.startsWith("WEB-INF/modules/") || name.equals("WEB-INF/axis2.xml")) {
 						File folderToCopyToWebApp = new File(getWebInfDirectory(), StringHandler.replace(name, "WEB-INF/", CoreConstants.EMPTY));
 						createAndCopyContent(entry, folderToCopyToWebApp, jarFile);
 					}
