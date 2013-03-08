@@ -18,6 +18,7 @@ import org.apache.maven.project.MavenProject;
 import com.idega.util.CustomConfigMerger;
 import com.idega.util.FacesConfigMerger;
 import com.idega.util.FileUtil;
+import com.idega.util.UrlRewriteConfigMerger;
 import com.idega.util.WebXmlMerger;
 
 /**
@@ -37,9 +38,11 @@ public class IdegaWebWarMojo extends WarMojo {
 	public IdegaWebWarMojo() {}
 
 	public void execute() throws MojoExecutionException{
+
     	createWebXml();
     	createFacesConfig();
     	createCustomConfig();
+    	createUrlRewriteConfig();
 
     	super.execute();
 
@@ -49,6 +52,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		mergeCustomizedFacesConfigs();
 		mergeCustomConfigs();
     	mergeWebInf();
+    	mergeUrlRewriteConfigs();
 
     	cleanup();
     }
@@ -97,6 +101,11 @@ public class IdegaWebWarMojo extends WarMojo {
 		createFacesConfig(facesCfg);
 	}
 
+	private void createUrlRewriteConfig() {
+		File facesCfg = getUrlRewriteConfigFile();
+		createUrlRewriterConfig(facesCfg);
+	}
+	
 	private void createWebXml(File webXml) {
 		if(!webXml.exists()){
 			try {
@@ -148,6 +157,28 @@ public class IdegaWebWarMojo extends WarMojo {
 				PrintWriter writer = new PrintWriter(facesCfg, "UTF-8");
 				writer.write(buf.toString());
 				writer.close();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	private void createUrlRewriterConfig(File urlRewriterCfg) {
+		if(!urlRewriterCfg.exists()){
+			try {
+
+				urlRewriterCfg.createNewFile();
+				String xmlHeader = "<?xml version='1.0' encoding='UTF-8'?>\n\n";
+
+				StringBuffer buf = new StringBuffer(xmlHeader);
+				buf.append("<urlrewrite>\n")
+					.append("<!-- empty -->\n")
+					.append("</urlrewrite>\n");
+
+				PrintWriter writer = new PrintWriter(urlRewriterCfg, "UTF-8");
+				writer.write(buf.toString());
+				writer.close();
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -211,7 +242,12 @@ public class IdegaWebWarMojo extends WarMojo {
 			}
 		}
 		else{
-			if(name.equals("WEB-INF/")||name.equals("WEB-INF/web.xml") || name.equals("WEB-INF/customized-faces-config.xml") || name.equals("WEB-INF/config.xml")){
+
+			if(name.equals("WEB-INF/")
+					||name.equals("WEB-INF/web.xml") 
+					|| name.equals("WEB-INF/customized-faces-config.xml") 
+					|| name.equals("WEB-INF/config.xml") 
+					|| name.equals("WEB-INF/urlrewrite.xml")){
 				return true;
 			}
 		}
@@ -293,6 +329,15 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return webInf;
 	}
+	
+
+	private void mergeUrlRewriteConfigs() {
+		UrlRewriteConfigMerger merger = new UrlRewriteConfigMerger();
+		merger.setBundleFilePath("/WEB-INF/urlrewrite.xml");
+    	merger.setBundlesFolder(getAndCreatePrivateBundlesDir());
+    	merger.setOutputFile(getUrlRewriteConfigFile());
+		merger.process();
+	}
 
 
 	private File getWebXmlFile() {
@@ -313,6 +358,11 @@ public class IdegaWebWarMojo extends WarMojo {
 		return file;
 	}
 
+	private File getUrlRewriteConfigFile() {
+		File file = new File(getWebInfDirectory(), "urlrewrite.xml");
+		return file;
+	}
+	
 	private File getLibDirectory() {
 		File libDirectory = new File(getWebInfDirectory(), "lib" );
 		return libDirectory;
