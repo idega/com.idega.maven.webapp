@@ -1,6 +1,7 @@
 package com.idega.maven.webapp;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -11,6 +12,7 @@ import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
@@ -102,8 +104,8 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
 	private void createUrlRewriteConfig() {
-		File facesCfg = getUrlRewriteConfigFile();
-		createUrlRewriterConfig(facesCfg);
+		File urlRewriteCfg = getUrlRewriteConfigFile();
+		createUrlRewriterConfig(urlRewriteCfg);
 	}
 	
 	private void createWebXml(File webXml) {
@@ -168,12 +170,21 @@ public class IdegaWebWarMojo extends WarMojo {
 			try {
 
 				urlRewriterCfg.createNewFile();
-				String xmlHeader = "<?xml version='1.0' encoding='UTF-8'?>\n\n";
 
-				StringBuffer buf = new StringBuffer(xmlHeader);
-				buf.append("<urlrewrite>\n")
-					.append("<!-- empty -->\n")
-					.append("</urlrewrite>\n");
+				StringBuffer buf = new StringBuffer();
+
+				// take initial urlrewrite file from the application if one exists
+				File applicationUrlRewrite = new File("WEB-INF/urlrewrite.xml");
+				if (applicationUrlRewrite.exists()) {
+					buf.append(IOUtils.toString(new FileInputStream(applicationUrlRewrite)));
+
+				} else {
+					buf
+						.append("<?xml version='1.0' encoding='UTF-8'?>\n\n")
+						.append("<urlrewrite>\n")
+						.append("<!-- empty -->\n")
+						.append("</urlrewrite>\n");					
+				}
 
 				PrintWriter writer = new PrintWriter(urlRewriterCfg, "UTF-8");
 				writer.write(buf.toString());
