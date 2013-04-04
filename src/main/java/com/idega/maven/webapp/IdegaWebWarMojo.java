@@ -114,6 +114,7 @@ public class IdegaWebWarMojo extends WarMojo {
 				webXml.createNewFile();
 
 				StringBuffer buf = new StringBuffer();
+
 				buf.append("<web-app xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\" xmlns=\"http://java.sun.com/xml/ns/javaee\" xmlns:web=\"http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\" xsi:schemaLocation=\"http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd\" id=\"Idega_ePlatform\" version=\"2.5\">\n");
 				buf.append("<display-name>Idega Web application: ePlatform</display-name>\n");
 
@@ -138,6 +139,7 @@ public class IdegaWebWarMojo extends WarMojo {
 				PrintWriter writer = new PrintWriter(webXml, "UTF-8");
 				writer.write(buf.toString());
 				writer.close();
+
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -314,6 +316,7 @@ public class IdegaWebWarMojo extends WarMojo {
    		WebXmlMerger merger = new WebXmlMerger();
    		merger.setBundlesFolder(getAndCreatePrivateBundlesDir());
    		merger.setOutputFile(getWebXmlFile());
+   		merger.addMergeInSourceFile(new File("WEB-INF/web.xml"), "self");
 		merger.process();
 	}
 
