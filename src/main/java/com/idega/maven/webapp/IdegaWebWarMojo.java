@@ -35,7 +35,11 @@ import com.idega.util.WebXmlMerger;
 public class IdegaWebWarMojo extends WarMojo {
 
 	private static final String WEB_INF = "WEB-INF";
-	private boolean extractBundles=false;
+	
+    /**
+     * @parameter
+     */
+	private boolean extractResources = false;
 
 	public IdegaWebWarMojo() {}
 
@@ -86,7 +90,7 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
 	private void cleanup() {
-		if(!isExtractBundles()){
+		if(!isExtractResources()){
 			//delete the idegaweb bundle dirs:
 			File bundlesDir = getAndCreatePrivateBundlesDir();
 			FileUtil.deleteFileAndChildren(bundlesDir);
@@ -205,7 +209,7 @@ public class IdegaWebWarMojo extends WarMojo {
 			File fJarFile = jarfiles[i];
 			try {
 				JarFile jarFile = new JarFile(fJarFile);
-				Enumeration entries = jarFile.entries();
+				Enumeration<JarEntry> entries = jarFile.entries();
 				while (entries.hasMoreElements()) {
 					JarEntry entry = (JarEntry) entries.nextElement();
 					String name = entry.getName();
@@ -213,13 +217,13 @@ public class IdegaWebWarMojo extends WarMojo {
 					if(extractResourceFromJar(name)){
 
 						File file = null;
-						if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")){
-						//if(name.startsWith("WEB-INF")){
-							file = new File(getAndCreatePrivateBundleDir(fJarFile),name);
+						if(name.startsWith("properties") || name.startsWith("jsp") || name.startsWith("WEB-INF")) {
+							file = new File(getAndCreatePrivateBundleDir(fJarFile), name);
 						}
 						else if(name.startsWith("resources")){
-							file = new File(getAndCreatePublicBundleDir(fJarFile),name);
+							file = new File(getAndCreatePublicBundleDir(fJarFile), name);
 						}
+
 						if(entry.isDirectory()){
 							file.mkdirs();
 						}
@@ -227,13 +231,7 @@ public class IdegaWebWarMojo extends WarMojo {
 							file.createNewFile();
 							InputStream inStream = jarFile.getInputStream(entry);
 							FileOutputStream outStream = new FileOutputStream(file);
-							int bufferlen = 1000;
-							byte[] buf = new byte[bufferlen];
-							int noRead = inStream.read(buf);
-							while(noRead!=-1){
-								outStream.write(buf);
-								noRead = inStream.read(buf);
-							}
+							IOUtils.copy(inStream, outStream);
 							outStream.close();
 							inStream.close();
 
@@ -248,22 +246,21 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
 	protected boolean extractResourceFromJar(String name){
-		if(isExtractBundles()){
-			//if extractBundles is true then extract all these directories
-			if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
+		if(isExtractResources()){
+			if(name.startsWith("resources/style") || 
+					name.startsWith("resources/javascript")){
 				return true;
 			}
 		}
-		else{
 
-			if(name.equals("WEB-INF/")
-					||name.equals("WEB-INF/web.xml") 
-					|| name.equals("WEB-INF/customized-faces-config.xml") 
-					|| name.equals("WEB-INF/config.xml") 
-					|| name.equals("WEB-INF/urlrewrite.xml")){
-				return true;
-			}
+		if(name.equals("WEB-INF/")
+				||name.equals("WEB-INF/web.xml") 
+				|| name.equals("WEB-INF/customized-faces-config.xml") 
+				|| name.equals("WEB-INF/config.xml") 
+				|| name.equals("WEB-INF/urlrewrite.xml")){
+			return true;
 		}
+
 		return false;
 	}
 
@@ -276,9 +273,10 @@ public class IdegaWebWarMojo extends WarMojo {
     	MavenProject project = getProject();
         if(project!=null){
 
-        Set artifacts = project.getArtifacts();
+        @SuppressWarnings("unchecked")
+		Set<Artifact> artifacts = project.getArtifacts();
 
-        for ( Iterator iter = artifacts.iterator(); iter.hasNext(); )
+        for ( Iterator<Artifact> iter = artifacts.iterator(); iter.hasNext(); )
         {
             Artifact artifact = (Artifact) iter.next();
 
@@ -440,12 +438,12 @@ public class IdegaWebWarMojo extends WarMojo {
 		return bundlesDir;
 	}
 
-	public boolean isExtractBundles() {
-		return extractBundles;
+	public boolean isExtractResources() {
+		return extractResources;
 	}
 
-	public void setExtractBundles(boolean extractBundles) {
-		this.extractBundles = extractBundles;
+	public void setExtractResources(boolean extractResources) {
+		this.extractResources = extractResources;
 	}
 
 
