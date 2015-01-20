@@ -43,6 +43,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 	public IdegaWebWarMojo() {}
 
+	@Override
 	public void execute() throws MojoExecutionException{
 
     	createWebXml();
@@ -211,7 +212,7 @@ public class IdegaWebWarMojo extends WarMojo {
 				JarFile jarFile = new JarFile(fJarFile);
 				Enumeration<JarEntry> entries = jarFile.entries();
 				while (entries.hasMoreElements()) {
-					JarEntry entry = (JarEntry) entries.nextElement();
+					JarEntry entry = entries.nextElement();
 					String name = entry.getName();
 					//if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
 					if(extractResourceFromJar(name)){
@@ -220,7 +221,7 @@ public class IdegaWebWarMojo extends WarMojo {
 						if(name.startsWith("properties") || name.startsWith("jsp") || name.startsWith("WEB-INF")) {
 							file = new File(getAndCreatePrivateBundleDir(fJarFile), name);
 						}
-						else if(name.startsWith("resources")){
+						else if(name.startsWith("resources") || name.startsWith("facelets")){
 							file = new File(getAndCreatePublicBundleDir(fJarFile), name);
 						}
 
@@ -248,7 +249,7 @@ public class IdegaWebWarMojo extends WarMojo {
 	protected boolean extractResourceFromJar(String name){
 		if(isExtractResources()){
 			if(name.startsWith("resources/style") || 
-					name.startsWith("resources/javascript")){
+					name.startsWith("resources/javascript") || name.startsWith("facelets")){
 				return true;
 			}
 		}
@@ -257,7 +258,8 @@ public class IdegaWebWarMojo extends WarMojo {
 				||name.equals("WEB-INF/web.xml") 
 				|| name.equals("WEB-INF/customized-faces-config.xml") 
 				|| name.equals("WEB-INF/config.xml") 
-				|| name.equals("WEB-INF/urlrewrite.xml")){
+				|| name.equals("WEB-INF/urlrewrite.xml")
+				|| name.endsWith(".p12")){
 			return true;
 		}
 
@@ -278,7 +280,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
         for ( Iterator<Artifact> iter = artifacts.iterator(); iter.hasNext(); )
         {
-            Artifact artifact = (Artifact) iter.next();
+            Artifact artifact = iter.next();
 
             // TODO: utilise appropriate methods from project builder
             // TODO: scope handler
