@@ -35,7 +35,7 @@ import com.idega.util.WebXmlMerger;
 public class IdegaWebWarMojo extends WarMojo {
 
 	private static final String WEB_INF = "WEB-INF";
-	
+
     /**
      * @parameter
      */
@@ -43,6 +43,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 	public IdegaWebWarMojo() {}
 
+	@Override
 	public void execute() throws MojoExecutionException{
 
     	createWebXml();
@@ -111,7 +112,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		File urlRewriteCfg = getUrlRewriteConfigFile();
 		createUrlRewriterConfig(urlRewriteCfg);
 	}
-	
+
 	private void createWebXml(File webXml) {
 		if(!webXml.exists()){
 			try {
@@ -170,7 +171,7 @@ public class IdegaWebWarMojo extends WarMojo {
 			}
 		}
 	}
-	
+
 	private void createUrlRewriterConfig(File urlRewriterCfg) {
 		if(!urlRewriterCfg.exists()){
 			try {
@@ -189,7 +190,7 @@ public class IdegaWebWarMojo extends WarMojo {
 						.append("<?xml version='1.0' encoding='UTF-8'?>\n\n")
 						.append("<urlrewrite>\n")
 						.append("<!-- empty -->\n")
-						.append("</urlrewrite>\n");					
+						.append("</urlrewrite>\n");
 				}
 
 				PrintWriter writer = new PrintWriter(urlRewriterCfg, "UTF-8");
@@ -211,7 +212,7 @@ public class IdegaWebWarMojo extends WarMojo {
 				JarFile jarFile = new JarFile(fJarFile);
 				Enumeration<JarEntry> entries = jarFile.entries();
 				while (entries.hasMoreElements()) {
-					JarEntry entry = (JarEntry) entries.nextElement();
+					JarEntry entry = entries.nextElement();
 					String name = entry.getName();
 					//if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
 					if(extractResourceFromJar(name)){
@@ -247,16 +248,16 @@ public class IdegaWebWarMojo extends WarMojo {
 
 	protected boolean extractResourceFromJar(String name){
 		if(isExtractResources()){
-			if(name.startsWith("resources/style") || 
+			if(name.startsWith("resources/style") ||
 					name.startsWith("resources/javascript")){
 				return true;
 			}
 		}
 
 		if(name.equals("WEB-INF/")
-				||name.equals("WEB-INF/web.xml") 
-				|| name.equals("WEB-INF/customized-faces-config.xml") 
-				|| name.equals("WEB-INF/config.xml") 
+				||name.equals("WEB-INF/web.xml")
+				|| name.equals("WEB-INF/customized-faces-config.xml")
+				|| name.equals("WEB-INF/config.xml")
 				|| name.equals("WEB-INF/urlrewrite.xml")){
 			return true;
 		}
@@ -278,7 +279,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
         for ( Iterator<Artifact> iter = artifacts.iterator(); iter.hasNext(); )
         {
-            Artifact artifact = (Artifact) iter.next();
+            Artifact artifact = iter.next();
 
             // TODO: utilise appropriate methods from project builder
             // TODO: scope handler
@@ -341,7 +342,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 		return webInf;
 	}
-	
+
 
 	private void mergeUrlRewriteConfigs() {
 		UrlRewriteConfigMerger merger = new UrlRewriteConfigMerger();
@@ -374,7 +375,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		File file = new File(getWebInfDirectory(), "urlrewrite.xml");
 		return file;
 	}
-	
+
 	private File getLibDirectory() {
 		File libDirectory = new File(getWebInfDirectory(), "lib" );
 		return libDirectory;
