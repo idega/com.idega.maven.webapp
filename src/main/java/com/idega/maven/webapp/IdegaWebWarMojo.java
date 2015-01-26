@@ -6,6 +6,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Set;
@@ -31,6 +34,7 @@ import com.idega.util.WebXmlMerger;
  * @goal war
  * @phase package
  * @requiresDependencyResolution runtime
+ * @requiresDependencyCollection runtime
  */
 public class IdegaWebWarMojo extends WarMojo {
 
@@ -40,6 +44,14 @@ public class IdegaWebWarMojo extends WarMojo {
      * @parameter
      */
 	private boolean extractResources = false;
+
+//	/**
+//	 * The current repository/network configuration of Maven.
+//	 *
+//	 * @parameter default-value="${repositorySystemSession}"
+//	 * @readonly
+//	 */
+//	private RepositorySystemSession repoSession;
 
 	public IdegaWebWarMojo() {}
 
@@ -51,11 +63,46 @@ public class IdegaWebWarMojo extends WarMojo {
     	createCustomConfig();
     	createUrlRewriteConfig();
 
+//    	Maven3 way
+//    	try{
+//	    	File repo = this.repoSession.getLocalRepository().getBasedir();
+//	    	MavenProject project = getProject();
+//	    	List<org.sonatype.aether.artifact.Artifact> deps = new Aether(this.getProject(), repo).resolve(
+//	    			new DefaultArtifact(project.getGroupId(), project.getArtifactId(), "war", project.getVersion()),
+//	    	  JavaScopes.COMPILE
+//	    	);
+//	    	ArrayList<File> files = new ArrayList<File>(artifacts.size());
+//	    	for(org.sonatype.aether.artifact.Artifact artifact : deps){
+//    			String id = artifact.getArtifactId();
+//		    	if(!id.startsWith("com.idega") && !id.startsWith("is.idega")){
+//					continue;
+//				}
+//    			files.add(artifact.getFile());
+//	    		//getLog().info("Arttt: " + artifact.getArtifactId());
+//	    	}
+//    		exctactResourcesFromJars(files);
+//    	}catch (Exception e) {
+//			throw new RuntimeException(e);
+//		}
+
+
+//    	maven2 way only dependencies that are in web apps pom.xml
+    	Set<Artifact> artifacts =  getProject().getDependencyArtifacts();
+    	ArrayList<File> files = new ArrayList<File>(artifacts.size());
+    	for(Artifact artifact : artifacts){
+    		String id = artifact.getArtifactId();
+	    	if(!id.startsWith("com.idega") && !id.startsWith("is.idega")){
+				continue;
+			}
+    		files.add(artifact.getFile());
+    	}
+    	exctactResourcesFromJars(files);
+
+
     	super.execute();
 
-		exctactResourcesFromJars();
+    	exctactResourcesFromJars();//Unable to resolve transitive dependencies with maven 2 so for local files need to run this again
 		compileDependencyList();
-
 		mergeCustomizedFacesConfigs();
 		mergeCustomConfigs();
     	mergeWebInf();
@@ -206,8 +253,10 @@ public class IdegaWebWarMojo extends WarMojo {
 	private void exctactResourcesFromJars() {
 		File libDir = getLibDirectory();
 		File[] jarfiles = libDir.listFiles();
-		for (int i = 0; i < jarfiles.length; i++) {
-			File fJarFile = jarfiles[i];
+		exctactResourcesFromJars(Arrays.asList(jarfiles));
+	}
+	private void exctactResourcesFromJars(Collection<File> jarfiles) {
+		for (File fJarFile : jarfiles) {
 			try {
 				JarFile jarFile = new JarFile(fJarFile);
 				Enumeration<JarEntry> entries = jarFile.entries();
@@ -221,7 +270,7 @@ public class IdegaWebWarMojo extends WarMojo {
 						if(name.startsWith("properties") || name.startsWith("jsp") || name.startsWith("WEB-INF")) {
 							file = new File(getAndCreatePrivateBundleDir(fJarFile), name);
 						}
-						else if(name.startsWith("resources")){
+						else if(name.startsWith("resources") || name.startsWith("facelets")){
 							file = new File(getAndCreatePublicBundleDir(fJarFile), name);
 						}
 
@@ -247,18 +296,24 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
 	protected boolean extractResourceFromJar(String name){
-		if(isExtractResources()){
-			if(name.startsWith("resources/style") ||
-					name.startsWith("resources/javascript")){
+		if (isExtractResources()) {
+			if (
+				name.startsWith("resources/style") ||
+				name.startsWith("resources/javascript") ||
+				name.startsWith("facelets")
+			) {
 				return true;
 			}
 		}
 
-		if(name.equals("WEB-INF/")
-				||name.equals("WEB-INF/web.xml")
-				|| name.equals("WEB-INF/customized-faces-config.xml")
-				|| name.equals("WEB-INF/config.xml")
-				|| name.equals("WEB-INF/urlrewrite.xml")){
+		if (
+			name.equals("WEB-INF/") ||
+			name.equals("WEB-INF/web.xml") ||
+			name.equals("WEB-INF/customized-faces-config.xml") ||
+			name.equals("WEB-INF/config.xml") ||
+			name.equals("WEB-INF/urlrewrite.xml") ||
+			name.endsWith(".p12")
+		) {
 			return true;
 		}
 
@@ -266,7 +321,6 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 
     private void compileDependencyList() {
-
         //File libDirectory = new File( webappDirectory, WEB_INF + "/lib" );
         //File tldDirectory = new File( webappDirectory, WEB_INF + "/tld" );
         //File webappClassesDirectory = new File( webappDirectory, WEB_INF + "/classes" );
