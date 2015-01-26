@@ -23,9 +23,8 @@ import org.apache.maven.artifact.resolver.filter.ScopeArtifactFilter;
 import org.apache.maven.model.Resource;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugin.war.PropertyUtils;
 import org.apache.maven.project.MavenProject;
-import org.codehaus.plexus.archiver.ArchiverException;
+import org.apache.maven.shared.utils.PropertyUtils;
 import org.codehaus.plexus.archiver.UnArchiver;
 import org.codehaus.plexus.archiver.manager.ArchiverManager;
 import org.codehaus.plexus.archiver.manager.NoSuchArchiverException;
@@ -38,7 +37,7 @@ import org.codehaus.plexus.util.StringUtils;
 public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * The maven project.
-	 * 
+	 *
 	 * @parameter expression="${project}"
 	 * @required
 	 * @readonly
@@ -47,7 +46,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * The directory containing generated classes.
-	 * 
+	 *
 	 * @parameter expression="${project.build.outputDirectory}"
 	 * @required
 	 * @readonly
@@ -56,7 +55,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * The directory where the webapp is built.
-	 * 
+	 *
 	 * @parameter expression="${project.build.directory}/${project.build.finalName}"
 	 * @required
 	 */
@@ -64,7 +63,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * Single directory for extra files to include in the WAR.
-	 * 
+	 *
 	 * @parameter expression="${basedir}/src/main/webapp"
 	 * @required
 	 */
@@ -72,7 +71,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * The list of webResources we want to transfer.
-	 * 
+	 *
 	 * @parameter
 	 */
 	private Resource[] webResources;
@@ -84,21 +83,21 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * The path to the web.xml file to use.
-	 * 
+	 *
 	 * @parameter expression="${maven.war.webxml}"
 	 */
 	private File webXml;
 
 	/**
 	 * The path to the context.xml file to use.
-	 * 
+	 *
 	 * @parameter expression="${maven.war.containerConfigXML}"
 	 */
 	private File containerConfigXML;
 
 	/**
 	 * Directory to unpack dependent WARs into if needed
-	 * 
+	 *
 	 * @parameter expression="${project.build.directory}/war/work"
 	 * @required
 	 */
@@ -106,7 +105,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * To look up Archiver/UnArchiver implementations
-	 * 
+	 *
 	 * @parameter expression="${component.org.codehaus.plexus.archiver.manager.ArchiverManager}"
 	 * @required
 	 */
@@ -121,14 +120,14 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * The comma separated list of tokens to include in the WAR. Default is
 	 * '**'.
-	 * 
+	 *
 	 * @parameter alias="includes"
 	 */
 	private String warSourceIncludes = "**";
 
 	/**
 	 * The comma separated list of tokens to exclude from the WAR.
-	 * 
+	 *
 	 * @parameter alias="excludes"
 	 */
 	private String warSourceExcludes;
@@ -136,14 +135,14 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * The comma separated list of tokens to include when doing a war overlay.
 	 * Default is '**'
-	 * 
+	 *
 	 * @parameter
 	 */
 	private String dependentWarIncludes = "**";
 
 	/**
 	 * The comma separated list of tokens to exclude when doing a way overlay.
-	 * 
+	 *
 	 * @parameter
 	 */
 	private String dependentWarExcludes;
@@ -201,7 +200,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a string array of the excludes to be used when assembling/copying
 	 * the war.
-	 * 
+	 *
 	 * @return an array of tokens to exclude
 	 */
 	protected String[] getExcludes() {
@@ -229,7 +228,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a string array of the includes to be used when assembling/copying
 	 * the war.
-	 * 
+	 *
 	 * @return an array of tokens to include
 	 */
 	protected String[] getIncludes() {
@@ -240,7 +239,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a string array of the excludes to be used when adding dependent
 	 * wars as an overlay onto this war.
-	 * 
+	 *
 	 * @return an array of tokens to exclude
 	 */
 	protected String[] getDependentWarExcludes() {
@@ -256,7 +255,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a string array of the includes to be used when adding dependent
 	 * wars as an overlay onto this war.
-	 * 
+	 *
 	 * @return an array of tokens to include
 	 */
 	protected String[] getDependentWarIncludes() {
@@ -319,11 +318,10 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 			String filtersfile = (String) i.next();
 
 			try {
-				Properties properties = PropertyUtils.loadPropertyFile(
-						new File(filtersfile), true, true);
+				Properties properties = PropertyUtils.loadProperties(new File(filtersfile));
 
 				filterProperties.putAll(properties);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				throw new MojoExecutionException(
 						"Error loading property file '" + filtersfile + "'", e);
 			}
@@ -397,7 +395,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Builds the webapp for the specified project. <p/> Classes, libraries and
 	 * tld files are copied to the <tt>webappDirectory</tt> during this phase.
-	 * 
+	 *
 	 * @param project
 	 *            the maven project
 	 * @param webappDirectory
@@ -501,7 +499,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Searches a set of artifacts for duplicate filenames and returns a list of
 	 * duplicates.
-	 * 
+	 *
 	 * @param artifacts
 	 *            set of artifacts
 	 * @return List of duplicated artifacts
@@ -524,7 +522,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Unpacks war artifacts into a temporary directory inside
 	 * <tt>workDirectory</tt> named with the name of the war.
-	 * 
+	 *
 	 * @param artifact
 	 *            War artifact to unpack.
 	 * @return Directory containing the unpacked war.
@@ -561,7 +559,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * Unpacks the archive file.
-	 * 
+	 *
 	 * @param file
 	 *            File to be unpacked.
 	 * @param location
@@ -577,10 +575,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 			unArchiver.setSourceFile(file);
 			unArchiver.setDestDirectory(location);
 			unArchiver.extract();
-		} catch (IOException e) {
-			throw new MojoExecutionException("Error unpacking file: " + file
-					+ "to: " + location, e);
-		} catch (ArchiverException e) {
+		} catch (Exception e) {
 			throw new MojoExecutionException("Error unpacking file: " + file
 					+ "to: " + location, e);
 		}
@@ -589,7 +584,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Recursively copies contents of <tt>srcDir</tt> into <tt>targetDir</tt>.
 	 * This will not overwrite any existing files.
-	 * 
+	 *
 	 * @param srcDir
 	 *            Directory containing unpacked dependent war contents
 	 * @param targetDir
@@ -632,7 +627,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a list of filenames that should be copied over to the destination
 	 * directory.
-	 * 
+	 *
 	 * @param sourceDir
 	 *            the directory to be scanned
 	 * @return the array of filenames, relative to the sourceDir
@@ -653,7 +648,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	/**
 	 * Returns a list of filenames that should be copied over to the destination
 	 * directory.
-	 * 
+	 *
 	 * @param resource
 	 *            the resource to be scanned
 	 * @return the array of filenames, relative to the sourceDir
@@ -662,13 +657,13 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 		DirectoryScanner scanner = new DirectoryScanner();
 		scanner.setBasedir(resource.getDirectory());
 		if (resource.getIncludes() != null && !resource.getIncludes().isEmpty()) {
-			scanner.setIncludes((String[]) resource.getIncludes().toArray(
+			scanner.setIncludes(resource.getIncludes().toArray(
 					EMPTY_STRING_ARRAY));
 		} else {
 			scanner.setIncludes(DEFAULT_INCLUDES);
 		}
 		if (resource.getExcludes() != null && !resource.getExcludes().isEmpty()) {
-			scanner.setExcludes((String[]) resource.getExcludes().toArray(
+			scanner.setExcludes(resource.getExcludes().toArray(
 					EMPTY_STRING_ARRAY));
 		}
 
@@ -685,7 +680,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	 * (and any parent directories) will be created. If a file
 	 * <code>source</code> in <code>destinationDirectory</code> exists, it
 	 * will be overwritten.
-	 * 
+	 *
 	 * @param source
 	 *            An existing <code>File</code> to copy.
 	 * @param destinationDirectory
@@ -786,7 +781,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	 * than the destination timestamp. The directories up to
 	 * <code>destination</code> will be created if they don't already exist.
 	 * <code>destination</code> will be overwritten if it already exists.
-	 * 
+	 *
 	 * @param source
 	 *            An existing non-directory <code>File</code> to copy bytes
 	 *            from.
@@ -819,7 +814,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 	 * <li>It will include empty directories.
 	 * <li>The <code>sourceDirectory</code> must exists.
 	 * </ul>
-	 * 
+	 *
 	 * @param sourceDirectory
 	 * @param destinationDirectory
 	 * @throws IOException
@@ -874,7 +869,7 @@ public abstract class AbstractWarMojo extends AbstractMojo {
 
 	/**
 	 * Converts the filename of an artifact to artifactId-version.type format.
-	 * 
+	 *
 	 * @param artifact
 	 * @return converted filename of the artifact
 	 */

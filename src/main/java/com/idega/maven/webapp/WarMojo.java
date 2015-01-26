@@ -107,7 +107,8 @@ public class WarMojo
      *
      * @throws MojoExecutionException if an error occured while building the webapp
      */
-    public void execute()
+    @Override
+	public void execute()
         throws MojoExecutionException
     {
         File warFile = getWarFile( new File( outputDirectory ), warName, classifier );
@@ -144,20 +145,20 @@ public class WarMojo
      * @throws DependencyResolutionRequiredException
      *
      */
-    private void performPackaging( File warFile )
+    private void performPackaging(File warFile)
         throws IOException, ArchiverException, ManifestException, DependencyResolutionRequiredException,
         MojoExecutionException
     {
         buildExplodedWebapp( getWebappDirectory() );
 
         //generate war file
-        getLog().info( "Generating war " + warFile.getAbsolutePath() );
+        getLog().info("Generating war " + warFile.getAbsolutePath());
 
         MavenArchiver archiver = new MavenArchiver();
 
-        archiver.setArchiver( warArchiver );
+        archiver.setArchiver(warArchiver);
 
-        archiver.setOutputFile( warFile );
+        archiver.setOutputFile(warFile);
 
         warArchiver.addDirectory( getWebappDirectory() );
 
