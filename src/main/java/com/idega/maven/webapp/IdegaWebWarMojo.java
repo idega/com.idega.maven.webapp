@@ -257,12 +257,13 @@ public class IdegaWebWarMojo extends WarMojo {
 	}
 	private void exctactResourcesFromJars(Collection<File> jarfiles) {
 		for (File fJarFile : jarfiles) {
+			String name = "";
 			try {
 				JarFile jarFile = new JarFile(fJarFile);
 				Enumeration<JarEntry> entries = jarFile.entries();
 				while (entries.hasMoreElements()) {
 					JarEntry entry = entries.nextElement();
-					String name = entry.getName();
+					name = entry.getName();
 					//if(name.startsWith("properties")||name.startsWith("jsp")||name.startsWith("WEB-INF")||name.startsWith("resources")){
 					if(extractResourceFromJar(name)){
 
@@ -274,10 +275,20 @@ public class IdegaWebWarMojo extends WarMojo {
 							file = new File(getAndCreatePublicBundleDir(fJarFile), name);
 						}
 
+						//System.out.println(file.toString());
 						if(entry.isDirectory()){
 							file.mkdirs();
 						}
 						else{
+							String path = file.getAbsolutePath();
+							if ((path != null)&&(path.length()>0))
+							{	
+								
+								if (path.lastIndexOf(File.separator)>0){
+									path = path.substring(0, path.lastIndexOf(File.separator));
+									new File(path).mkdirs();
+								}
+							}
 							file.createNewFile();
 							InputStream inStream = jarFile.getInputStream(entry);
 							FileOutputStream outStream = new FileOutputStream(file);
@@ -290,6 +301,7 @@ public class IdegaWebWarMojo extends WarMojo {
 				}
 			} catch (IOException e) {
 				e.printStackTrace();
+				System.out.println(name);
 			}
 
 		}
