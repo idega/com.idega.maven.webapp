@@ -2,10 +2,12 @@ package com.idega.maven.webapp;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import com.idega.util.FacesConfigMerger;
 import com.idega.util.FileUtil;
 import com.idega.util.UrlRewriteConfigMerger;
 import com.idega.util.WebXmlMerger;
+import com.idega.util.XMLWebserviceConfigurationTool;
 
 /**
  * Build the necessary things up in an idegaweb webapp
@@ -62,31 +65,12 @@ public class IdegaWebWarMojo extends WarMojo {
     	createFacesConfig();
     	createCustomConfig();
     	createUrlRewriteConfig();
+    	try {
+			createJAXConfig();
+		} catch (IOException e) {
+			new MojoExecutionException("Error creating sun-jaxws.xml file: ", e);
+		}
 
-//    	Maven3 way
-//    	try{
-//	    	File repo = this.repoSession.getLocalRepository().getBasedir();
-//	    	MavenProject project = getProject();
-//	    	List<org.sonatype.aether.artifact.Artifact> deps = new Aether(this.getProject(), repo).resolve(
-//	    			new DefaultArtifact(project.getGroupId(), project.getArtifactId(), "war", project.getVersion()),
-//	    	  JavaScopes.COMPILE
-//	    	);
-//	    	ArrayList<File> files = new ArrayList<File>(artifacts.size());
-//	    	for(org.sonatype.aether.artifact.Artifact artifact : deps){
-//    			String id = artifact.getArtifactId();
-//		    	if(!id.startsWith("com.idega") && !id.startsWith("is.idega")){
-//					continue;
-//				}
-//    			files.add(artifact.getFile());
-//	    		//getLog().info("Arttt: " + artifact.getArtifactId());
-//	    	}
-//    		exctactResourcesFromJars(files);
-//    	}catch (Exception e) {
-//			throw new RuntimeException(e);
-//		}
-
-
-//    	maven2 way only dependencies that are in web apps pom.xml
     	Set<Artifact> artifacts =  getProject().getDependencyArtifacts();
     	ArrayList<File> files = new ArrayList<File>(artifacts.size());
     	for(Artifact artifact : artifacts){
@@ -107,6 +91,7 @@ public class IdegaWebWarMojo extends WarMojo {
 		mergeCustomConfigs();
     	mergeWebInf();
     	mergeUrlRewriteConfigs();
+    	mergeXMLWebserviceConfig();
 
     	cleanup();
     }
@@ -219,6 +204,29 @@ public class IdegaWebWarMojo extends WarMojo {
 		}
 	}
 
+	/**
+	 * 
+	 * <p>TODO</p>
+	 * @param file
+	 * @throws IOException
+	 */
+	private void createJAXConfig() throws IOException {
+		File file = new File(getWebInfDirectory(), XMLWebserviceConfigurationTool.FILENAME);
+		if(!file.exists()){
+			StringBuffer content = new StringBuffer();
+			content.append(XMLWebserviceConfigurationTool.XML_HEADER);
+			content.append("<endpoints xmlns=\"http://java.sun.com/xml/ns/jax-ws/ri/runtime\" version=\"2.0\">\n");
+			content.append("<!-- empty -->");
+			content.append("\n</endpoints>\n");
+
+			file.createNewFile();
+
+			PrintWriter writer = new PrintWriter(file, XMLWebserviceConfigurationTool.ENCODING);
+			writer.write(content.toString());
+			writer.close();
+		}
+	}
+
 	private void createUrlRewriterConfig(File urlRewriterCfg) {
 		if(!urlRewriterCfg.exists()){
 			try {
@@ -324,6 +332,7 @@ public class IdegaWebWarMojo extends WarMojo {
 			name.equals("WEB-INF/customized-faces-config.xml") ||
 			name.equals("WEB-INF/config.xml") ||
 			name.equals("WEB-INF/urlrewrite.xml") ||
+			name.equals(XMLWebserviceConfigurationTool.PATH.substring(1)) ||
 			name.endsWith(".p12")
 		) {
 			return true;
@@ -383,6 +392,14 @@ public class IdegaWebWarMojo extends WarMojo {
    		merger.setOutputFile(getWebXmlFile());
    		merger.addMergeInSourceFile(new File("WEB-INF/web.xml"), "self");
 		merger.process();
+	}
+
+	private void mergeXMLWebserviceConfig() {
+		XMLWebserviceConfigurationTool tool = new XMLWebserviceConfigurationTool();
+   		tool.setBundlesFolder(getAndCreatePrivateBundlesDir());
+   		tool.setOutputFile(new File(getWebInfDirectory(), XMLWebserviceConfigurationTool.FILENAME));
+   		tool.addMergeInSourceFile(new File(XMLWebserviceConfigurationTool.PATH), "self");
+		tool.process();
 	}
 
 	private void mergeCustomizedFacesConfigs() {

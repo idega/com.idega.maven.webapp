@@ -35,6 +35,7 @@ import org.codehaus.plexus.util.DirectoryScanner;
 import org.codehaus.plexus.util.FileUtils;
 
 import com.idega.util.WebXmlMerger;
+import com.idega.util.XMLWebserviceConfigurationTool;
 
 /**
  * Build the necessary things up in an idegaweb webapp
@@ -89,6 +90,17 @@ public class IdegaWebWarMojo2
             }
         }
     }    
+
+    /**
+     * <p>TODO</p>
+     */
+    private void mergeXMLWebserviceConfig() {
+		XMLWebserviceConfigurationTool tool = new XMLWebserviceConfigurationTool();
+   		tool.setBundlesFolder(getAndCreatePrivateBundlesDir());
+   		tool.setOutputFile(new File(getWebInfDirectory(), XMLWebserviceConfigurationTool.FILENAME));
+   		tool.addMergeInSourceFile(new File(XMLWebserviceConfigurationTool.PATH), "self");
+		tool.process();
+	}
     
     public void execute()
     throws MojoExecutionException
@@ -98,6 +110,8 @@ public class IdegaWebWarMojo2
     		compileDependencyList();
     		
     		mergeWebInf();
+
+    		mergeXMLWebserviceConfig();
     		
     }
 
