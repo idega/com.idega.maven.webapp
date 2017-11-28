@@ -2,12 +2,10 @@ package com.idega.maven.webapp;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -22,6 +20,7 @@ import org.apache.maven.artifact.Artifact;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 
+import com.idega.util.CoreConstants;
 import com.idega.util.CustomConfigMerger;
 import com.idega.util.FacesConfigMerger;
 import com.idega.util.FileUtil;
@@ -221,7 +220,7 @@ public class IdegaWebWarMojo extends WarMojo {
 
 			file.createNewFile();
 
-			PrintWriter writer = new PrintWriter(file, XMLWebserviceConfigurationTool.ENCODING);
+			PrintWriter writer = new PrintWriter(file, CoreConstants.ENCODING_UTF8);
 			writer.write(content.toString());
 			writer.close();
 		}
